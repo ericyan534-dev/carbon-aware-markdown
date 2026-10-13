@@ -42,7 +42,7 @@ def panel_composition(ax):
     cols = [SERIES["dairy"], SERIES["produce"], SERIES["bakery"]]
     ax.stackplot(100 * d, *layers, colors=cols, alpha=0.9, edgecolor="white", linewidth=0.6)
     ax.text(4, 0.5, "regular buyers (replace a purchase)", color="white", fontsize=6.3, va="center")
-    ax.annotate("switchers, share $\\kappa$ (replace a fresh purchase)", (50, 2.2), xytext=(3, 3.3),
+    ax.annotate("switchers, share $\\kappa$\n(replace a fresh purchase)", (40, 1.9), xytext=(3, 3.0),
                 fontsize=6.3, color=INK, arrowprops=dict(arrowstyle="-", color=MUTED, lw=0.6))
     ax.annotate("new shoppers (replace nothing)", (56, 4.3), xytext=(3, 5.2), fontsize=6.3,
                 color=INK, arrowprops=dict(arrowstyle="-", color=MUTED, lw=0.6))
