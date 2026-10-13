@@ -2,7 +2,7 @@
 
 Outputs (outputs/alignment/):
   s1_cells.csv      20 cases at the SCC: theta_bar, carbon gap vs. profit-max
-  s1_sweep.csv      20 cases x 71 carbon prices (0-5 USD/kg): same quantities (Fig. 4b)
+  s1_sweep.csv      20 cases x 71 carbon prices (0-5 USD/kg): same quantities (Fig. 3b)
   s1_monotone.csv   per case: stage-problem (2,080 states) and full-DP (145,600 comparisons) checks
 Run scripts/alignment_analyze.py afterwards for the summary statistics.
 """

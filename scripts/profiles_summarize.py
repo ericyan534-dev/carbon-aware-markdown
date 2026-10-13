@@ -1,6 +1,6 @@
 """Summarise profile shares, overstatement and timings (outputs/profiles); run after profiles_run.py.
 
-Writes profile_distributions.csv (Sec. V-D/V-F shares), profile_by_eps_band.csv, timing_stages.csv,
+Writes profile_distributions.csv (Sec. V-D/V-E shares), profile_by_eps_band.csv, timing_stages.csv,
 timing_extrapolation.json and headlines.json.
 """
 import json

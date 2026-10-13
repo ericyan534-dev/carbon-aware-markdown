@@ -1,4 +1,4 @@
-"""Sobol analysis over ten inputs of the carbon-priced policy's gain over the static rule (Sec. V-F).
+"""Sobol analysis over ten inputs of the carbon-priced policy's gain over the static rule (Sec. V-E).
 
 Dairy, Hong Kong; 512 x (10 + 2) = 6,144 evaluations. Writes outputs/sobol/.
 """

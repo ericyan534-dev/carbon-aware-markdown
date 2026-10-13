@@ -1,4 +1,4 @@
-"""Strategic waiting: a share s of full-price buyers waits for markdowns (Sec. V-F).
+"""Strategic waiting: a share s of full-price buyers waits for markdowns (Sec. V-E).
 
 s in {0.1, 0.2, 0.3}, with and without the displaced-production credit, plus a stress case in
 which every strategic buyer waits for any discount. Writes outputs/consumer/waiting_*.

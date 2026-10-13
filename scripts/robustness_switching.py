@@ -1,18 +1,23 @@
-"""Decoupled switching shares and split decay rates (Sec. V-F).
+"""Decoupled switching shares, split decay rates and the accounting ablation (Sec. III-B, V-E).
 
 * metrics:    profit-max share of the best value at the SCC and related ratios, 20 cases
 * decoupled:  the switching share in the retailer's margin (kappa_R) and in displaced production
               (kappa_C) vary independently over {0.15, 0.33, 0.5, 0.67, 0.85, 1}: 36 pairs
 * split_lambda: separate decay rates for freshness (substitutability) and household consumption,
               each in {0.75, 1.5, 3} per day
+* ablation:   static last-day 35% rule; overstatement of cleared-unit crediting with the full
+              ledger and with displacement switched off (carbon-side switching share = 1, so
+              only the freshness and household-consumption corrections remain); the difference
+              is the part added by displacement (Sec. III-B)
 
-Writes outputs/switching/switching.json.
+Writes outputs/switching/switching.json and outputs/switching/ablation_by_case.csv.
 """
 import json
 import sys
 from pathlib import Path
 
 import numpy as np
+import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
@@ -23,6 +28,7 @@ from tblca.scenario import build, fixed_policy, with_objective  # noqa: E402
 from tblca.substitution import freshness_gate, rebound_gate, spoilage_gate  # noqa: E402
 
 OUT = ROOT / "outputs" / "switching" / "switching.json"
+ABLATION_CSV = OUT.parent / "ablation_by_case.csv"
 CASES = [(a, g) for a in ARCHETYPES for g in REGIONS]
 KAPPA_GRID = (0.15, 0.33, 0.5, 0.67, 0.85, 1.0)
 LAMBDA_GRID = (0.75, 1.5, 3.0)
@@ -91,14 +97,39 @@ def exp_split_lambda():
     return out
 
 
+def static_overstatement(p, unit_fn=unit_economics):
+    """Overstatement (%) of crediting every unit the static rule clears as avoided production."""
+    pol = fixed_policy(p, lambda r: 0.35 if r == 1 else 0.0)
+    ev = fast_evaluate(p, pol, build_tables(p, unit_fn))
+    naive = ev["sales"] * p.unit_kg * (p.ef_prod + p.ef_eol - p.ops_kg)
+    return 100 * (naive / ev["carbon_kg"] - 1)
+
+
+def exp_ablation():
+    rows = []
+    for a, g in CASES:
+        p = build(a, g)
+        full = static_overstatement(p)
+        gates = static_overstatement(p, carbon_unit_fn(kappa_c=1.0))
+        rows.append(dict(archetype=a, region=g, full_pct=full, gates_only_pct=gates,
+                         displacement_pp=full - gates, displacement_share_pct=100 * (full - gates) / full))
+    tab = pd.DataFrame(rows)
+    ABLATION_CSV.parent.mkdir(parents=True, exist_ok=True)
+    tab.round(2).to_csv(ABLATION_CSV, index=False)
+    out = {m: summarize(tab[m]) for m in ("full_pct", "gates_only_pct", "displacement_pp",
+                                          "displacement_share_pct")}
+    return {m: {**v, "mean": round(float(tab[m].mean()), 2)} for m, v in out.items()}
+
+
 def main():
-    res = {"metrics": exp_metrics(), "decoupled": exp_decoupled(), "split_lambda": exp_split_lambda()}
+    res = {"metrics": exp_metrics(), "decoupled": exp_decoupled(), "split_lambda": exp_split_lambda(),
+           "ablation": exp_ablation()}
     res["decoupled_min_ratio"] = min(v["ratio"]["min"] for v in res["decoupled"].values())
     res["split_lambda_min_ratio"] = min(v["ratio"]["min"] for v in res["split_lambda"].values())
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(res, indent=1))
-    print(json.dumps({k: res[k] for k in ("metrics", "decoupled_min_ratio", "split_lambda_min_ratio")},
-                     indent=1))
+    keys = ("metrics", "decoupled_min_ratio", "split_lambda_min_ratio", "ablation")
+    print(json.dumps({k: res[k] for k in keys}, indent=1))
 
 
 if __name__ == "__main__":

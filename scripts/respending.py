@@ -1,4 +1,4 @@
-"""Re-spending of consumer savings at 0.2-0.6 kgCO2e per dollar (Sec. V-F).
+"""Re-spending of consumer savings at 0.2-0.6 kgCO2e per dollar (Sec. V-E).
 
 Two accounting modes: only displacing buyers' savings are re-spent ("none"), or a fixed budget
 in which incremental purchases divert other spending ("diversion"). Writes outputs/consumer/respend_*.

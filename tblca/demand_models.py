@@ -13,7 +13,7 @@ Here a DemandModel generalises the truth along three axes:
   * dispersion: variance/mean of daily demand (1 = Poisson, >1 = negative binomial);
   * eps_true: the true elasticity (defaults to the planning problem's eps).
 The retained share used by the gate is always computed from the *true* demand
-curve, s(d) = m(0)/m(d), so profit and carbon stay internally consistent.
+curve, s(d) = m(0)/m(d), so profit and carbon stay consistent.
 With DemandModel() the functions reproduce tblca.markdown exactly.
 """
 from dataclasses import dataclass

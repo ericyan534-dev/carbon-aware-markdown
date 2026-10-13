@@ -1,4 +1,4 @@
-"""Optimal discounts deepen as stock rises (Sec. IV-D).
+"""Optimal discounts deepen as stock rises (Sec. V-D).
 
 Checks that the optimal policy is nondecreasing in inventory x on every day:
   * paper cases: 20 product-region cases x 6 goals (profit, carbon-only, waste-min, carbon

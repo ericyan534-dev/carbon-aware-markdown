@@ -1,10 +1,11 @@
-"""Main experiments: five policies x 20 product-region cases (Table II, Sec. V-B to V-E).
+"""Main experiments: five policies x 20 product-region cases (Table II, Fig. 2, Sec. III-B, V-B, V-D).
 
 Writes to outputs/main/:
   policy_comparison.csv  every policy's metrics in every case (Table II is the Hong Kong slice)
   gains.csv              carbon-priced policy vs. static rule and vs. profit-maximizing policy
   summary.json           overstatement of cleared-unit crediting under the static rule
-  headlines.json         every range quoted in Sec. V-B, V-D and V-E
+  headlines.json         every range quoted in Sec. III-B, V-B and V-D
+  goals.csv              each policy's value at the SCC as % of the best attainable (Fig. 2)
 """
 import json
 import sys
@@ -43,6 +44,22 @@ def naive_carbon(p, df):
     return df["sales"] * per_unit
 
 
+GOALS = {PM: "profit", SCC: "weighted", CO: "carbon", WM: "waste", STATIC: "static"}
+
+
+def goals_table(full):
+    """Value at the SCC (profit + priced CO2e) of five policies, % of the SCC-optimal value."""
+    rows = []
+    for (arch, region), g in full.groupby(["archetype", "region"], sort=False):
+        s = g.set_index("policy")
+        value = s.profit + SCC_USD_PER_KG * s.carbon_kg
+        for label, key in GOALS.items():
+            rows.append(dict(archetype=arch, region=region, policy=key,
+                             pct_best=100 * value[label] / value[SCC],
+                             profit=s.profit[label], carbon=s.carbon_kg[label]))
+    return pd.DataFrame(rows)
+
+
 def _range(s):
     return {"min": round(float(s.min()), 2), "median": round(float(s.median()), 2),
             "max": round(float(s.max()), 2)}
@@ -72,17 +89,13 @@ def headlines(full):
         "V-B carbon-only profit above waste-min (%)": _range(100 * (P[CO] / P[WM] - 1)),
         "V-B carbon-only avoids at least as much CO2e as waste-min (cases)":
             int((C[CO] >= C[WM] - 1e-9).sum()),
-        "Fig3 carbon-priced CO2e retained vs waste-min (%)": _range(100 * C[SCC] / C[WM]),
-        "Fig3 profit-max CO2e retained vs waste-min (%)": _range(100 * C[PM] / C[WM]),
-        "Fig3 carbon-priced profit gain vs waste-min (%)": _range(100 * (P[SCC] / P[WM] - 1)),
-        "Fig3 profit-max profit gain vs waste-min (%)": _range(100 * (P[PM] / P[WM] - 1)),
         "V-D profit-max profit gain vs static (%)": _range(100 * (P[PM] / P[STATIC] - 1)),
         "V-D profit-max CO2e gain vs static (%)": _range(100 * (C[PM] / C[STATIC] - 1)),
         "V-D Hong Kong unsold, static (%)": _range(hk[STATIC]),
         "V-D Hong Kong unsold, profit-max (%)": _range(hk[PM]),
-        "V-E static-rule overstatement (%)": _range(over),
-        "V-E static-rule overstatement mean (%)": round(float(over.mean()), 2),
-        "II-C operational emissions, max share of net avoided CO2e (%)":
+        "III-B static-rule overstatement (%)": _range(over),
+        "III-B static-rule overstatement mean (%)": round(float(over.mean()), 2),
+        "IV-A operational emissions, max share of net avoided CO2e (%)":
             round(float((100 * k["ops_kg"] / C).max().max()), 2),
     }
 
@@ -116,6 +129,7 @@ def main():
         zip(naive.archetype + "|" + naive.region, over.round(1)))}
     (OUT / "summary.json").write_text(json.dumps(summary, indent=1))
     print("naive overstatement (last-day rule):", over.describe().round(1).to_dict())
+    goals_table(full).to_csv(OUT / "goals.csv", index=False)
     head = headlines(full)
     (OUT / "headlines.json").write_text(json.dumps(head, indent=1))
     print(json.dumps(head, indent=1))

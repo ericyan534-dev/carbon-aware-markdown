@@ -1,4 +1,4 @@
-"""Propagate the sampling uncertainty of the elasticity (IV 1.94, s.e. 0.017; 500 draws) (Sec. V-F).
+"""Propagate the sampling uncertainty of the elasticity (IV 1.94, s.e. 0.017; 500 draws) (Sec. V-E).
 
 Writes outputs/elasticity_uncertainty/{draws.csv, headline_bands.csv, per_case_bands.csv, meta.json}.
 """

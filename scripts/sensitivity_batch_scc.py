@@ -1,4 +1,4 @@
-"""Profit-max share of the best value at the SCC over batch size, SCC level, kappa and eps (Sec. V-F).
+"""Profit-max share of the best value at the SCC over batch size, SCC level, kappa and eps (Sec. V-E).
 
 Grid: 4 products x kappa {0.4, 0.67, 0.9} x eps {1.5, 1.94, 3.0} x SCC {120, 190, 340 USD/t}
 x batch {1.25, 2, 3} times full-price demand (Hong Kong). Writes outputs/sensitivity/.

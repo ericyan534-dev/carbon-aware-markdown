@@ -3,7 +3,7 @@
 Writes outputs/alignment/summary.json with
   * the batch-average alignment index at the SCC per case and the carbon price at which it
     reaches one (theta_bar is linear in the carbon price);
-  * Spearman correlations and the Hill fit of the universal curve (Fig. 4b);
+  * Spearman correlations and the Hill fit of the universal curve (Fig. 3b);
   * monotonicity counts: stage problem over 2,080 states and full DP over 145,600 comparisons.
 """
 import json

@@ -1,4 +1,4 @@
-"""Per-profile work for the 4,121 calibrated store-product profiles (Sec. V-D, V-F).
+"""Per-profile work for the 4,121 calibrated store-product profiles (Sec. V-D, V-E).
 
 Each profile is solved as
     build(product_type, "Hong Kong", carbon_price=SCC_USD_PER_KG, q0=row.q0, eps=row.eps)

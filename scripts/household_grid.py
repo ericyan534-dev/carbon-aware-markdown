@@ -1,4 +1,4 @@
-"""Household freshness decay x home-waste grid: 4 products x 21 x 15 = 1,260 cases (Sec. V-F).
+"""Household freshness decay x home-waste grid: 4 products x 21 x 15 = 1,260 cases (Sec. V-E).
 
 Hong Kong, lam_f in [0.5, 2.5], p_base in [0.10, 0.45]. Writes outputs/household/.
 """
