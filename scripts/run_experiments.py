@@ -1,27 +1,32 @@
-"""Main experiments: five policies x 20 product-region cases (Table II, Fig. 2, Sec. III-B, V-B, V-D).
+"""Main experiments: five policies x 20 product-region cases (Table II, Figs. 1c and 3, Sec. III-B, V-B, V-D).
 
 Writes to outputs/main/:
   policy_comparison.csv  every policy's metrics in every case (Table II is the Hong Kong slice)
   gains.csv              carbon-priced policy vs. static rule and vs. profit-maximizing policy
   summary.json           overstatement of cleared-unit crediting under the static rule
   headlines.json         every range quoted in Sec. III-B, V-B and V-D
-  goals.csv              each policy's value at the SCC as % of the best attainable (Fig. 2)
+  goals.csv              each policy's value at the SCC as % of the best attainable (Fig. 3a)
+  pareto.csv             carbon-priced policy in Hong Kong as the carbon price rises 0-5 USD/kg (Fig. 3b)
+  landscape_dairy_hk.npz profit, net CO2e and waste of every two-level discount schedule (Fig. 1c)
 """
 import json
 import sys
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
-from tblca.markdown import evaluate_policy, solve  # noqa: E402
+from tblca.markdown import evaluate_policy, fixed_policy, solve  # noqa: E402
 from tblca.params import ARCHETYPES, REGIONS, SCC_USD_PER_KG  # noqa: E402
 from tblca.scenario import build, heuristic_policies, with_objective  # noqa: E402
 
 OUT = ROOT / "outputs" / "main"
 PM, SCC, WM, CO, STATIC = ("Profit-optimal", "SCC-weighted (ours)", "Waste-optimal",
                            "Carbon-optimal", "Last-day 35%")
+PARETO_PRICES = np.concatenate([[0], np.geomspace(0.01, 5, 25)])   # USD per kg CO2e
+LANDSCAPE_GRID = np.linspace(0, 0.6, 25)                            # discount depths
 
 
 def policy_table(arch, region):
@@ -42,6 +47,30 @@ def naive_carbon(p, df):
     """Claimed carbon if every sold unit fully displaced production (delta = 1)."""
     per_unit = p.unit_kg * (p.ef_prod + p.ef_eol - p.ops_kg)
     return df["sales"] * per_unit
+
+
+def pareto(arch, region, prices=PARETO_PRICES):
+    """Carbon-priced optimum as the carbon price rises from 0 to 5 USD/kg."""
+    base = build(arch, region)
+    rows = [dict(archetype=arch, carbon_price=cp, **solve(with_objective(base, "weighted", cp)).metrics)
+            for cp in prices]
+    return pd.DataFrame(rows)
+
+
+def landscape(arch, region, grid=LANDSCAPE_GRID):
+    """Profit, net CO2e and unsold units of every schedule 'earlier-day discount e, last-day l'.
+
+    Arrays are indexed [e, l] over `grid`.
+    """
+    p = build(arch, region)
+    shape = (len(grid), len(grid))
+    profit, carbon, waste = np.zeros(shape), np.zeros(shape), np.zeros(shape)
+    for i, e in enumerate(grid):
+        for j, last in enumerate(grid):
+            pol = fixed_policy(p, lambda r, e=e, last=last: last if r == 1 else e)
+            m = evaluate_policy(p, pol).metrics
+            profit[i, j], carbon[i, j], waste[i, j] = m["profit"], m["carbon_kg"], m["waste_units"]
+    return dict(g=grid, P=profit, C=carbon, W=waste)
 
 
 GOALS = {PM: "profit", SCC: "weighted", CO: "carbon", WM: "waste", STATIC: "static"}
@@ -130,6 +159,8 @@ def main():
     (OUT / "summary.json").write_text(json.dumps(summary, indent=1))
     print("naive overstatement (last-day rule):", over.describe().round(1).to_dict())
     goals_table(full).to_csv(OUT / "goals.csv", index=False)
+    pd.concat([pareto(a, "Hong Kong") for a in ARCHETYPES]).to_csv(OUT / "pareto.csv", index=False)
+    np.savez(OUT / "landscape_dairy_hk.npz", **landscape("dairy", "Hong Kong"))
     head = headlines(full)
     (OUT / "headlines.json").write_text(json.dumps(head, indent=1))
     print(json.dumps(head, indent=1))

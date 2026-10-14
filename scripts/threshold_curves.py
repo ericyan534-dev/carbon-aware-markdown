@@ -6,7 +6,7 @@
 * ratio(eps)  value at the SCC of the profit-maximizing policy as % of the SCC-optimal value,
               per product type at the stylized q0 = 8 units/day, eps in [0.5, 7] step 0.01
 
-Writes outputs/threshold/theory_curves.csv and theory_meta.json (Fig. 3a).
+Writes outputs/threshold/theory_curves.csv and theory_meta.json (Fig. 4b).
 """
 import json
 import os
